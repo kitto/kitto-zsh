@@ -32,10 +32,48 @@ fi'
    [[ "$output" == *"usage: mdn"* ]]
 }
 
-@test "starter-kit degits the public template" {
+@test "starter-kit copies certs from KITTO_ZSH_CERT_PATH" {
+   make_stub bun
+   make_stub bunx
+   mkdir -p "$BATS_TEST_TMPDIR/certs" "$BATS_TEST_TMPDIR/proj"
+   touch "$BATS_TEST_TMPDIR/certs/localhost.pem" "$BATS_TEST_TMPDIR/certs/localhost-key.pem"
+   run_zsh "cd \"$BATS_TEST_TMPDIR/proj\"
+      export KITTO_ZSH_CERT_PATH=\"$BATS_TEST_TMPDIR/certs\"
+      starter-kit"
+   [ "$status" -eq 0 ]
+   assert_logged "bunx degit https://github.com/mattpilott/starter-kit ."
+   [ -f "$BATS_TEST_TMPDIR/proj/localhost.pem" ]
+   [ -f "$BATS_TEST_TMPDIR/proj/localhost-key.pem" ]
+   refute_logged "mkcert"
+}
+
+@test "starter-kit mints certs with mkcert when no cert path is set" {
+   make_stub bun
+   make_stub bunx
+   make_stub mkcert
+   run_zsh 'starter-kit'
+   [ "$status" -eq 0 ]
+   assert_logged "mkcert -install"
+   assert_logged "mkcert localhost"
+}
+
+@test "starter-kit installs mkcert via brew when missing" {
+   make_stub bun
+   make_stub bunx
+   make_stub mkcert
+   mv "$STUB_DIR/mkcert" "$STUB_DIR/mkcert.pending"
+   make_stub brew '
+[ "$1" = "install" ] && [ "$2" = "mkcert" ] && mv "'"$STUB_DIR"'/mkcert.pending" "'"$STUB_DIR"'/mkcert"'
+   run_zsh 'starter-kit'
+   [ "$status" -eq 0 ]
+   assert_logged "brew install mkcert nss"
+   assert_logged "mkcert localhost"
+}
+
+@test "starter-kit skips certs gracefully with no mkcert and no brew" {
    make_stub bun
    make_stub bunx
    run_zsh 'starter-kit'
    [ "$status" -eq 0 ]
-   assert_logged "bunx degit https://github.com/mattpilott/starter-kit ."
+   [[ "$output" == *"skipped https certs"* ]]
 }

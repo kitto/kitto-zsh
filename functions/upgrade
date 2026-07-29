@@ -16,11 +16,11 @@ else
    printf "$step" "Homebrew (skipped — not installed)"
 fi
 
-if (( $+commands[fnm] && $+functions[node] )); then
+if (( $+functions[node] )); then
    printf "$step" "Node"
-   node upgrade
+   node upgrade   # installs fnm on first run if it's missing
 else
-   printf "$step" "Node (skipped — fnm not installed)"
+   printf "$step" "Node (skipped)"
 fi
 
 if (( $+commands[npm] )); then

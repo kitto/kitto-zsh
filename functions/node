@@ -1,10 +1,22 @@
 # node — fnm-backed version management with upgrade/lts/latest subcommands
 emulate -L zsh
 
-# Without fnm this function has no business shadowing the real binary
+# Anything that isn't a subcommand is the real node
+case "$1" in
+   upgrade|lts|latest) ;;
+   *) command node "$@"; return ;;
+esac
+
+# The subcommands need fnm — install it on first use
 if ! (( $+commands[fnm] )); then
-   command node "$@"
-   return
+   if ! (( $+commands[brew] )); then
+      echo "kitto-zsh: fnm is required (https://github.com/Schniz/fnm)" >&2
+      return 127
+   fi
+   echo "kitto-zsh: fnm not found — installing it with Homebrew"
+   brew install fnm || return
+   rehash
+   echo 'kitto-zsh: add  eval "$(fnm env --use-on-cd --shell zsh)"  to ~/.zshrc to complete setup'
 fi
 
 case "$1" in
@@ -33,5 +45,4 @@ case "$1" in
       ;;
    lts)    fnm default lts-latest && fnm use lts-latest && command node -v ;;
    latest) fnm default latest && fnm use latest && command node -v ;;
-   *)      command node "$@" ;;
 esac

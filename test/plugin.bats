@@ -1,9 +1,10 @@
 load helper
 
 @test "plugin loads in a bare shell and registers functions" {
-   run_zsh 'whence -w upgrade kit starter-kit mdn git-prune'
+   run_zsh 'whence -w upgrade node kit starter-kit mdn git-prune'
    [ "$status" -eq 0 ]
    [[ "$output" == *"upgrade: function"* ]]
+   [[ "$output" == *"node: function"* ]]
    [[ "$output" == *"kit: function"* ]]
    [[ "$output" == *"starter-kit: function"* ]]
    [[ "$output" == *"mdn: function"* ]]
@@ -13,18 +14,21 @@ load helper
 @test "KITTO_ZSH_SKIP opts out of individual functions" {
    run zsh -f -c "
       PATH=\"$STUB_DIR:/usr/bin:/bin\"
-      KITTO_ZSH_SKIP=(upgrade kit)
+      KITTO_ZSH_SKIP=(upgrade node)
       source \"$PLUGIN\"
-      whence -w upgrade; whence -w kit; whence -w mdn
+      whence -w upgrade; whence -w node; whence -w mdn
    "
    [[ "$output" != *"upgrade: function"* ]]
-   [[ "$output" != *"kit: function"* ]]
+   [[ "$output" != *"node: function"* ]]
    [[ "$output" == *"mdn: function"* ]]
 }
 
-@test "node is not shadowed when fnm is absent" {
-   run_zsh 'whence -w node || true'
-   [[ "$output" != *"node: function"* ]]
+@test "node without fnm still runs the real binary" {
+   make_stub node
+   run_zsh 'node --version'
+   [ "$status" -eq 0 ]
+   assert_logged "node --version"
+   refute_logged "fnm"
 }
 
 @test "bun is not shadowed when bun is absent" {
@@ -32,11 +36,9 @@ load helper
    [[ "$output" != *"bun: function"* ]]
 }
 
-@test "node and bun are shadowed when their tools exist" {
-   make_stub fnm
+@test "bun is shadowed when it exists" {
    make_stub bun
-   run_zsh 'whence -w node bun'
+   run_zsh 'whence -w bun'
    [ "$status" -eq 0 ]
-   [[ "$output" == *"node: function"* ]]
    [[ "$output" == *"bun: function"* ]]
 }

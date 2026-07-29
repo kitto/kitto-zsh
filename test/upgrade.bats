@@ -21,11 +21,11 @@ esac'
    [[ "$output" == *"All up to date"* ]]
 }
 
-@test "upgrade skips sections whose tool is missing instead of aborting" {
+@test "upgrade skips or degrades sections whose tool is missing and still finishes" {
    run_zsh 'upgrade'
    [ "$status" -eq 0 ]
    [[ "$output" == *"Homebrew (skipped"* ]]
-   [[ "$output" == *"Node (skipped"* ]]
+   [[ "$output" == *"fnm is required"* ]]
    [[ "$output" == *"npm (skipped"* ]]
    [[ "$output" == *"Bun (skipped"* ]]
    [[ "$output" == *"All up to date"* ]]

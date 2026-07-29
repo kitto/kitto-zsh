@@ -1,4 +1,4 @@
-# starter-kit — clone mattpilott/starter-kit into the current directory
+# starter-kit — clone mattpilott/starter-kit here, with trusted localhost certs
 emulate -L zsh
 
 if ! (( $+commands[bun] )); then
@@ -6,4 +6,23 @@ if ! (( $+commands[bun] )); then
    return 127
 fi
 
-bunx degit https://github.com/mattpilott/starter-kit .
+bunx degit https://github.com/mattpilott/starter-kit . || return
+
+# Certs: copy yours from $KITTO_ZSH_CERT_PATH, or mint fresh ones with mkcert
+if [[ -n "$KITTO_ZSH_CERT_PATH" ]]; then
+   cp ${~KITTO_ZSH_CERT_PATH}/localhost*.pem . 2>/dev/null && return
+   echo "kitto-zsh: no localhost*.pem in $KITTO_ZSH_CERT_PATH — falling back to mkcert"
+fi
+
+if ! (( $+commands[mkcert] )); then
+   if ! (( $+commands[brew] )); then
+      echo "kitto-zsh: skipped https certs — install mkcert to create them" >&2
+      return 0
+   fi
+   echo "kitto-zsh: mkcert not found — installing it with Homebrew"
+   brew install mkcert nss || return
+   rehash
+fi
+
+mkcert -install
+mkcert localhost

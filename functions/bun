@@ -1,4 +1,4 @@
-# bun — adds an `up` subcommand for interactive dependency updates
+# bun — `up` updates everything, reinstalls from scratch and starts the dev server
 emulate -L zsh
 
 if ! (( $+commands[bun] )); then
@@ -7,12 +7,11 @@ if ! (( $+commands[bun] )); then
 fi
 
 if [[ "$1" == up ]]; then
-   command bun update -i --latest || return
-   # --clean opts into a from-scratch reinstall after the update
-   if [[ "$2" == --clean ]]; then
-      command rm -rf node_modules bun.lock
-      command bun install
-   fi
+   command bun update -i --latest
+   command rm -rf node_modules
+   command rm -f bun.lock
+   command bun i
+   command bun dev
 else
    command bun "$@"
 fi

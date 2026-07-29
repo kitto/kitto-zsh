@@ -8,8 +8,9 @@
 # Set KITTO_ZSH_SKIP=(name ...) before sourcing to opt out of any function
 typeset -ga KITTO_ZSH_SKIP
 
-# node and bun shadow real binaries — only take over when their backing tool exists
-(( $+commands[fnm] )) || KITTO_ZSH_SKIP+=(node)
+# bun shadows the real binary — only take over when bun itself exists
+# (node is always defined: it installs fnm on first subcommand use and
+#  passes everything else through to the real binary)
 (( $+commands[bun] )) || KITTO_ZSH_SKIP+=(bun)
 
 fpath=("${0:A:h}/functions" "${0:A:h}/completions" $fpath)

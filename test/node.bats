@@ -51,6 +51,28 @@ OUT
    assert_logged "fnm default lts-latest"
 }
 
+@test "node upgrade installs fnm via brew when it's missing" {
+   # fnm stub is parked out of PATH; the brew stub "installs" it
+   make_fnm
+   mv "$STUB_DIR/fnm" "$STUB_DIR/fnm.pending"
+   make_stub brew '
+[ "$1" = "install" ] && [ "$2" = "fnm" ] && mv "'"$STUB_DIR"'/fnm.pending" "'"$STUB_DIR"'/fnm"'
+   cat > "$STUB_DIR/fnm.list" <<'OUT'
+* v22.12.0 default, lts-latest
+OUT
+   run_zsh 'node upgrade'
+   [ "$status" -eq 0 ]
+   assert_logged "brew install fnm"
+   assert_logged "fnm install --lts"
+   [[ "$output" == *"fnm env --use-on-cd"* ]]
+}
+
+@test "node subcommands fail clearly without fnm or brew" {
+   run_zsh 'node upgrade'
+   [ "$status" -eq 127 ]
+   [[ "$output" == *"fnm is required"* ]]
+}
+
 @test "node passes plain args through to the real binary" {
    make_fnm
    make_stub node

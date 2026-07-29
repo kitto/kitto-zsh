@@ -1,0 +1,14 @@
+# mdn — baseline + docs lookup for a web feature via web-features-cli
+emulate -L zsh
+
+if ! (( $+commands[bun] )); then
+   echo "kitto-zsh: bun is required (https://bun.sh)" >&2
+   return 127
+fi
+
+if (( ! $# )); then
+   echo "usage: mdn <feature> [web-features-cli args]" >&2
+   return 1
+fi
+
+bunx web-features-cli "$1" -s baseline -s docs -n 3 "${@:2}"

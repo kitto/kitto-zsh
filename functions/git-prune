@@ -1,0 +1,10 @@
+# git-prune — delete local branches whose upstream is gone
+emulate -L zsh
+
+if ! (( $+commands[git] )); then
+   echo "kitto-zsh: git is required" >&2
+   return 127
+fi
+
+git fetch --prune &&
+git branch -vv | awk '$1 != "*" && /: gone]/ {print $1}' | xargs -r git branch -d

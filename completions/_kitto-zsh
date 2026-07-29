@@ -1,0 +1,24 @@
+#compdef kit node
+# bun is deliberately not claimed here — bun ships its own rich completion
+# (~/.bun/_bun) and registering it would clobber that.
+
+local -a subs
+
+case $service in
+   kit)
+      subs=(
+         'i:scaffold a SvelteKit project here (bunx sv create .)'
+         'up:update @sveltejs/kit and adapter-auto'
+      )
+      (( CURRENT == 2 )) && _describe -t subcommands 'kit subcommand' subs
+      ;;
+   node)
+      subs=(
+         'upgrade:install latest LTS + latest via fnm, prune the rest'
+         'lts:make LTS the fnm default'
+         'latest:make latest the fnm default'
+      )
+      (( CURRENT == 2 )) && _describe -t subcommands 'node subcommand' subs
+      _files
+      ;;
+esac

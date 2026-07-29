@@ -1,0 +1,9 @@
+# starter-kit — clone mattpilott/starter-kit into the current directory
+emulate -L zsh
+
+if ! (( $+commands[bun] )); then
+   echo "kitto-zsh: bun is required (https://bun.sh)" >&2
+   return 127
+fi
+
+bunx degit https://github.com/mattpilott/starter-kit .

@@ -1,0 +1,40 @@
+# upgrade — brew → node → npm → bun, skipping anything not installed
+emulate -L zsh
+
+local step=$'\n\033[1;36m→ %s\033[0m\n'
+
+if (( $+commands[brew] )); then
+   printf "$step" "Homebrew"
+   brew update && brew upgrade
+
+   printf "$step" "Homebrew doctor"
+   brew doctor   # warnings are informational, so don't stop the run on them
+
+   printf "$step" "Homebrew cleanup"
+   brew cleanup
+else
+   printf "$step" "Homebrew (skipped — not installed)"
+fi
+
+if (( $+commands[fnm] && $+functions[node] )); then
+   printf "$step" "Node"
+   node upgrade
+else
+   printf "$step" "Node (skipped — fnm not installed)"
+fi
+
+if (( $+commands[npm] )); then
+   printf "$step" "npm"
+   npm i npm -g
+else
+   printf "$step" "npm (skipped — not installed)"
+fi
+
+if (( $+commands[bun] )); then
+   printf "$step" "Bun"
+   command bun upgrade
+else
+   printf "$step" "Bun (skipped — not installed)"
+fi
+
+printf "$step" "All up to date"

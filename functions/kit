@@ -1,0 +1,13 @@
+# kit — scaffold or update a SvelteKit project
+emulate -L zsh
+
+if ! (( $+commands[bun] )); then
+   echo "kitto-zsh: bun is required (https://bun.sh)" >&2
+   return 127
+fi
+
+case "$1" in
+   i)  bunx sv create . ;;
+   up) command bun install -D @sveltejs/kit @sveltejs/adapter-auto ;;
+   *)  echo "usage: kit i|up" >&2; return 1 ;;
+esac

@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # brew and fnm behaviour are the whole point — Linux would test the wrong thing
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: |
+          zsh -n kitto-zsh.plugin.zsh
+          for f in functions/* completions/*; do zsh -n "$f"; done
+
+      - name: Install bats
+        run: brew install bats-core
+
+      - name: Run tests
+        run: bats test
+
+      - name: Fresh shell smoke test
+        run: zsh -df -c 'source ./kitto-zsh.plugin.zsh; whence -w upgrade kit starter-kit mdn git-prune'

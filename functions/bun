@@ -1,0 +1,18 @@
+# bun — adds an `up` subcommand for interactive dependency updates
+emulate -L zsh
+
+if ! (( $+commands[bun] )); then
+   echo "kitto-zsh: bun is required (https://bun.sh)" >&2
+   return 127
+fi
+
+if [[ "$1" == up ]]; then
+   command bun update -i --latest || return
+   # --clean opts into a from-scratch reinstall after the update
+   if [[ "$2" == --clean ]]; then
+      command rm -rf node_modules bun.lock
+      command bun install
+   fi
+else
+   command bun "$@"
+fi

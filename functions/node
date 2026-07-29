@@ -1,0 +1,37 @@
+# node — fnm-backed version management with upgrade/lts/latest subcommands
+emulate -L zsh
+
+# Without fnm this function has no business shadowing the real binary
+if ! (( $+commands[fnm] )); then
+   command node "$@"
+   return
+fi
+
+case "$1" in
+   upgrade)
+      # Keep whichever channel is the current default; lts-latest if none is set
+      local pref=lts-latest
+      fnm list | grep default | grep -qE '(^|[ ,])latest' && pref=latest
+
+      fnm install --lts
+      fnm install --latest
+
+      local lts latest
+      lts="$(fnm exec --using=lts-latest node -v)" || { echo "lts lookup failed"; return 1 }
+      latest="$(fnm exec --using=latest node -v)" || { echo "latest lookup failed"; return 1 }
+      [[ -n "$lts" && -n "$latest" ]] || { echo "version lookup came back empty"; return 1 }
+
+      local v
+      fnm list | awk '{sub(/^\* /, ""); print $1}' | grep '^v' | while read -r v; do
+         [[ "$v" == "$lts" || "$v" == "$latest" ]] && continue
+         fnm uninstall "$v"
+      done
+
+      fnm default "$pref"
+      fnm use "$pref" 2>/dev/null
+      fnm list
+      ;;
+   lts)    fnm default lts-latest && fnm use lts-latest && command node -v ;;
+   latest) fnm default latest && fnm use latest && command node -v ;;
+   *)      command node "$@" ;;
+esac

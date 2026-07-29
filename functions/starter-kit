@@ -1,9 +1,25 @@
-# starter-kit — clone mattpilott/starter-kit into the current directory
+# starter-kit — degit mattpilott/starter-kit here, mint certs, update deps and run
 emulate -L zsh
 
-if ! (( $+commands[bun] )); then
-   echo "kitto-zsh: bun is required (https://bun.sh)" >&2
+# degit just needs a runner — bun, pnpm or npm all work
+local -a runner
+if (( $+commands[bun] )); then
+   runner=(bunx)
+elif (( $+commands[pnpm] )); then
+   runner=(pnpm dlx)
+elif (( $+commands[npm] )); then
+   runner=(npx --yes)
+else
+   echo "kitto-zsh: bun, pnpm or npm is required" >&2
    return 127
 fi
 
-bunx degit https://github.com/mattpilott/starter-kit .
+$runner degit https://github.com/mattpilott/starter-kit . || return
+
+(( $+functions[certify] )) && certify
+
+if (( $+functions[bun] )); then
+   bun up
+else
+   echo "kitto-zsh: bun not installed — skipped bun up, install dependencies yourself"
+fi

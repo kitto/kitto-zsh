@@ -32,13 +32,44 @@ fi'
    [[ "$output" == *"usage: mdn"* ]]
 }
 
-@test "starter-kit degits the public template" {
+@test "starter-kit degits, certifies, then runs bun up" {
    make_stub bun
    make_stub bunx
-   run_zsh 'starter-kit'
+   make_stub mkcert
+   mkdir -p "$BATS_TEST_TMPDIR/proj"
+   run_zsh "cd \"$BATS_TEST_TMPDIR/proj\" && starter-kit </dev/null"
    [ "$status" -eq 0 ]
    assert_logged "bunx degit https://github.com/mattpilott/starter-kit ."
-   refute_logged "mkcert"
+   assert_logged "mkcert -install"
+   assert_logged "mkcert localhost"
+   assert_logged "bun update -i --latest"
+   assert_logged "bun dev"
+}
+
+@test "starter-kit degits via pnpm and skips bun up without bun" {
+   make_stub pnpm
+   make_stub mkcert
+   run_zsh 'starter-kit </dev/null'
+   [ "$status" -eq 0 ]
+   assert_logged "pnpm dlx degit https://github.com/mattpilott/starter-kit ."
+   assert_logged "mkcert localhost"
+   refute_logged "bun update"
+   [[ "$output" == *"skipped bun up"* ]]
+}
+
+@test "starter-kit degits via npx when only npm exists" {
+   make_stub npm
+   make_stub npx
+   make_stub mkcert
+   run_zsh 'starter-kit </dev/null'
+   [ "$status" -eq 0 ]
+   assert_logged "npx --yes degit https://github.com/mattpilott/starter-kit ."
+}
+
+@test "starter-kit fails clearly with no runner at all" {
+   run_zsh 'starter-kit'
+   [ "$status" -eq 127 ]
+   [[ "$output" == *"bun, pnpm or npm is required"* ]]
 }
 
 @test "certify defaults to localhost when the prompt gets no input" {

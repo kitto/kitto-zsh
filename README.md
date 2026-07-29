@@ -14,7 +14,8 @@ Everything autoloads, so the cost to your shell startup is a single `fpath` appe
 | `bun up` | Interactive `bun update -i --latest`, then wipes `node_modules` + `bun.lock`, reinstalls fresh and starts `bun dev`. |
 | `kit i` | Scaffold a SvelteKit project in the current directory (`bunx sv create .`). |
 | `kit up` | Update `@sveltejs/kit` and `@sveltejs/adapter-auto`. |
-| `starter-kit` | Degit [mattpilott/starter-kit](https://github.com/mattpilott/starter-kit) into the current directory, then sort https certs: copies `localhost*.pem` from `$KITTO_ZSH_CERT_PATH` if you've set it, otherwise mints them with [mkcert](https://github.com/FiloSottile/mkcert) (installing mkcert + nss via brew if needed). |
+| `starter-kit` | Degit [mattpilott/starter-kit](https://github.com/mattpilott/starter-kit) into the current directory. |
+| `certify` | Mint trusted local https certs with [mkcert](https://github.com/FiloSottile/mkcert), installing mkcert + nss via brew if needed. Prompts for a domain (default `localhost`), or pass domains directly: `certify example.com`. |
 | `mdn <feature>` | Baseline status + MDN docs for a web feature, via [web-features-cli](https://www.npmjs.com/package/web-features-cli). |
 | `git-prune` | Delete local branches whose upstream is gone. |
 

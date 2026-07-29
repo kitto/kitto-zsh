@@ -32,48 +32,51 @@ fi'
    [[ "$output" == *"usage: mdn"* ]]
 }
 
-@test "starter-kit copies certs from KITTO_ZSH_CERT_PATH" {
+@test "starter-kit degits the public template" {
    make_stub bun
    make_stub bunx
-   mkdir -p "$BATS_TEST_TMPDIR/certs" "$BATS_TEST_TMPDIR/proj"
-   touch "$BATS_TEST_TMPDIR/certs/localhost.pem" "$BATS_TEST_TMPDIR/certs/localhost-key.pem"
-   run_zsh "cd \"$BATS_TEST_TMPDIR/proj\"
-      export KITTO_ZSH_CERT_PATH=\"$BATS_TEST_TMPDIR/certs\"
-      starter-kit"
+   run_zsh 'starter-kit'
    [ "$status" -eq 0 ]
    assert_logged "bunx degit https://github.com/mattpilott/starter-kit ."
-   [ -f "$BATS_TEST_TMPDIR/proj/localhost.pem" ]
-   [ -f "$BATS_TEST_TMPDIR/proj/localhost-key.pem" ]
    refute_logged "mkcert"
 }
 
-@test "starter-kit mints certs with mkcert when no cert path is set" {
-   make_stub bun
-   make_stub bunx
+@test "certify defaults to localhost when the prompt gets no input" {
    make_stub mkcert
-   run_zsh 'starter-kit'
-   [ "$status" -eq 0 ]
+   run_zsh 'certify </dev/null'
    assert_logged "mkcert -install"
    assert_logged "mkcert localhost"
 }
 
-@test "starter-kit installs mkcert via brew when missing" {
-   make_stub bun
-   make_stub bunx
+@test "certify uses the domain typed at the prompt" {
+   make_stub mkcert
+   run_zsh 'certify <<< "example.com"'
+   [ "$status" -eq 0 ]
+   assert_logged "mkcert -install"
+   assert_logged "mkcert example.com"
+}
+
+@test "certify accepts domains as arguments" {
+   make_stub mkcert
+   run_zsh 'certify example.com "*.example.com"'
+   [ "$status" -eq 0 ]
+   assert_logged "mkcert example.com *.example.com"
+   refute_logged "mkcert localhost"
+}
+
+@test "certify installs mkcert and nss via brew when missing" {
    make_stub mkcert
    mv "$STUB_DIR/mkcert" "$STUB_DIR/mkcert.pending"
    make_stub brew '
 [ "$1" = "install" ] && [ "$2" = "mkcert" ] && mv "'"$STUB_DIR"'/mkcert.pending" "'"$STUB_DIR"'/mkcert"'
-   run_zsh 'starter-kit'
+   run_zsh 'certify localhost'
    [ "$status" -eq 0 ]
    assert_logged "brew install mkcert nss"
    assert_logged "mkcert localhost"
 }
 
-@test "starter-kit skips certs gracefully with no mkcert and no brew" {
-   make_stub bun
-   make_stub bunx
-   run_zsh 'starter-kit'
-   [ "$status" -eq 0 ]
-   [[ "$output" == *"skipped https certs"* ]]
+@test "certify fails clearly with no mkcert and no brew" {
+   run_zsh 'certify localhost'
+   [ "$status" -eq 127 ]
+   [[ "$output" == *"mkcert is required"* ]]
 }

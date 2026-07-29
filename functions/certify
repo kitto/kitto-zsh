@@ -1,0 +1,21 @@
+# certify — mint trusted local https certs with mkcert (installing it if needed)
+emulate -L zsh
+
+if ! (( $+commands[mkcert] )); then
+   if ! (( $+commands[brew] )); then
+      echo "kitto-zsh: mkcert is required (https://github.com/FiloSottile/mkcert)" >&2
+      return 127
+   fi
+   echo "kitto-zsh: mkcert not found — installing it with Homebrew"
+   brew install mkcert nss || return
+   rehash
+fi
+
+local -a domains=("$@")
+if (( ! $#domains )); then
+   local reply
+   read -r "reply?Domain [localhost]: "
+   domains=(${=reply:-localhost})
+fi
+
+mkcert -install && mkcert $domains

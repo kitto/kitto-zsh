@@ -1,4 +1,4 @@
-#compdef kit node
+#compdef kit node vault
 # bun is deliberately not claimed here — bun ships its own rich completion
 # (~/.bun/_bun) and registering it would clobber that.
 
@@ -20,5 +20,16 @@ case $service in
       )
       (( CURRENT == 2 )) && _describe -t subcommands 'node subcommand' subs
       _files
+      ;;
+   vault)
+      local -a names
+      names=(${(f)"$(vault list 2>/dev/null)"})
+      if (( CURRENT == 2 )); then
+         subs=('list:show stored secret names' 'rm:delete a stored secret')
+         _describe -t subcommands 'vault subcommand' subs
+         (( $#names )) && _describe -t secrets 'stored secret' names
+      elif (( CURRENT == 3 )) && [[ $words[2] == rm ]]; then
+         _describe -t secrets 'stored secret' names
+      fi
       ;;
 esac

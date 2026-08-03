@@ -1,0 +1,58 @@
+# vault — keep api keys and tokens in the macOS keychain, not your dotfiles
+emulate -L zsh
+
+if ! (( $+commands[security] )); then
+   echo "kitto-zsh: vault needs macOS (the security tool)" >&2
+   return 127
+fi
+
+local account=kitto-vault
+
+case "$1" in
+   "")
+      local secret name
+      IFS= read -rs "secret?Secret (input hidden): "
+      print
+      [[ -n "$secret" ]] || { echo "kitto-zsh: nothing entered" >&2; return 1 }
+      read -r "name?Call it (e.g. GITHUB_TOKEN): "
+      [[ -n "$name" ]] || { echo "kitto-zsh: a name is required" >&2; return 1 }
+
+      # secret + confirmation go in via stdin, so it never touches argv or history
+      printf '%s\n%s\n' "$secret" "$secret" |
+         security add-generic-password -U -a "$account" -s "$name" -w 2>/dev/null || {
+            echo "kitto-zsh: keychain write failed" >&2
+            return 1
+         }
+
+      print "Stored in the keychain. Use it:"
+      print "  \"\$(vault $name)\"              inline"
+      print "  export $name=\"\$(vault $name)\"   in ~/.zshrc"
+      ;;
+   list)
+      security dump-keychain 2>/dev/null |
+         awk -F'"' '/"acct"<blob>="kitto-vault"/ {f=1; next} f && /"svce"<blob>=/ {print $4; f=0}'
+      ;;
+   rm)
+      [[ -n "$2" ]] || { echo "usage: vault rm <name>" >&2; return 1 }
+      if security delete-generic-password -a "$account" -s "$2" >/dev/null 2>&1; then
+         echo "removed $2"
+      else
+         echo "kitto-zsh: no secret called $2" >&2
+         return 1
+      fi
+      ;;
+   *)
+      local secret
+      secret="$(security find-generic-password -a "$account" -s "$1" -w 2>/dev/null)" || {
+         echo "kitto-zsh: no secret called $1 — run vault to add it" >&2
+         return 1
+      }
+      if [[ -t 1 ]]; then
+         # don't print secrets to a terminal — hand it to the clipboard instead
+         print -rn -- "$secret" | pbcopy
+         echo "copied $1 to the clipboard"
+      else
+         print -rn -- "$secret"
+      fi
+      ;;
+esac

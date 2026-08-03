@@ -7,6 +7,9 @@ if ! (( $+commands[security] )); then
 fi
 
 local account=kitto-vault
+local manifest="${XDG_CONFIG_HOME:-$HOME/.config}/kitto-zsh/vault.zsh"
+local no_export=0
+[[ "$1" == -n ]] && { no_export=1; shift }
 
 case "$1" in
    "")
@@ -24,9 +27,20 @@ case "$1" in
             return 1
          }
 
-      print "Stored in the keychain. Use it:"
-      print "  \"\$(vault $name)\"              inline"
-      print "  export $name=\"\$(vault $name)\"   in ~/.zshrc"
+      if (( no_export )) || [[ ! "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+         (( no_export )) || echo "kitto-zsh: $name isn't a valid env var name, so it won't be auto-exported" >&2
+         print "Stored in the keychain. Use it:"
+         print "  \"\$(vault $name)\""
+      else
+         # manifest holds names only — the value stays in the keychain
+         mkdir -p "${manifest:h}"
+         [[ -f "$manifest" ]] && sed -i '' "/^export ${name}=/d" "$manifest"
+         print -r -- "export ${name}=\"\$(vault ${name})\"" >> "$manifest"
+         export "${name}=${secret}"
+         print "Stored and exported — live in this shell and every new one:"
+         print "  process.env.$name    in anything started from a shell"
+         print "  \"\$(vault $name)\"    anywhere else"
+      fi
       ;;
    list)
       security dump-keychain 2>/dev/null |
@@ -35,11 +49,26 @@ case "$1" in
    rm)
       [[ -n "$2" ]] || { echo "usage: vault rm <name>" >&2; return 1 }
       if security delete-generic-password -a "$account" -s "$2" >/dev/null 2>&1; then
+         [[ -f "$manifest" && "$2" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] && sed -i '' "/^export ${2}=/d" "$manifest"
          echo "removed $2"
       else
          echo "kitto-zsh: no secret called $2" >&2
          return 1
       fi
+      ;;
+   export)
+      local name="$2" secret
+      [[ -n "$name" ]] || { echo "usage: vault export <name>" >&2; return 1 }
+      [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || { echo "kitto-zsh: $name isn't a valid env var name" >&2; return 1 }
+      secret="$(security find-generic-password -a "$account" -s "$name" -w 2>/dev/null)" || {
+         echo "kitto-zsh: no secret called $name — run vault to add it" >&2
+         return 1
+      }
+      mkdir -p "${manifest:h}"
+      [[ -f "$manifest" ]] && sed -i '' "/^export ${name}=/d" "$manifest"
+      print -r -- "export ${name}=\"\$(vault ${name})\"" >> "$manifest"
+      export "${name}=${secret}"
+      echo "exported $name"
       ;;
    *)
       local secret

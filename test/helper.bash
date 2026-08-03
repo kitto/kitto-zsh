@@ -19,10 +19,11 @@ EOF
    chmod +x "$STUB_DIR/$name"
 }
 
-# run_zsh <zsh code> — bare zsh, stubs first on PATH, plugin sourced
+# run_zsh <zsh code> — bare zsh, stubs first on PATH, config isolated, plugin sourced
 run_zsh() {
    run zsh -f -c "
       PATH=\"$STUB_DIR:/usr/bin:/bin\"
+      export XDG_CONFIG_HOME=\"$BATS_TEST_TMPDIR/config\"
       source \"$PLUGIN\"
       $1
    "

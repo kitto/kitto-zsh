@@ -27,12 +27,86 @@ MY_TOKEN"'
    [ "$(grep -c "s3cret-value" "$STUB_DIR/security.stdin")" -eq 2 ]
 }
 
-@test "vault prints copiable usage after storing" {
+@test "vault add auto-exports: manifest line, no secret in it, live in current shell" {
    make_security
    run_zsh 'vault <<< "s3cret-value
+MY_TOKEN"
+print -r -- "live:$MY_TOKEN"'
+   [ "$status" -eq 0 ]
+   MANIFEST="$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh"
+   grep -qxF 'export MY_TOKEN="$(vault MY_TOKEN)"' "$MANIFEST"
+   ! grep -q "s3cret-value" "$MANIFEST"
+   [[ "$output" == *"live:s3cret-value"* ]]
+}
+
+@test "re-adding a name doesn't duplicate its manifest line" {
+   make_security
+   run_zsh 'vault <<< "s3cret-value
+MY_TOKEN"
+vault <<< "new-value
 MY_TOKEN"'
-   [[ "$output" == *'$(vault MY_TOKEN)'* ]]
-   [[ "$output" == *'export MY_TOKEN='* ]]
+   [ "$(grep -c '^export MY_TOKEN=' "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh")" -eq 1 ]
+}
+
+@test "vault -n stores without exporting" {
+   make_security
+   run_zsh 'vault -n <<< "s3cret-value
+MY_TOKEN"'
+   [ "$status" -eq 0 ]
+   [[ "$output" == *"Stored in the keychain"* ]]
+   [ ! -f "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh" ]
+}
+
+@test "a name that isn't a valid env var still stores but isn't exported" {
+   make_security
+   run_zsh 'vault <<< "s3cret-value
+my token"'
+   [ "$status" -eq 0 ]
+   [[ "$output" == *"isn't a valid env var name"* ]]
+   assert_logged "security add-generic-password -U -a kitto-vault -s my token -w"
+   [ ! -f "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh" ]
+}
+
+@test "vault export adds an already-stored secret to the manifest" {
+   make_security
+   run_zsh 'vault export MY_TOKEN && print -r -- "live:$MY_TOKEN"'
+   [ "$status" -eq 0 ]
+   grep -qxF 'export MY_TOKEN="$(vault MY_TOKEN)"' "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh"
+   [[ "$output" == *"live:s3cret-value"* ]]
+}
+
+@test "vault rm drops the manifest line too" {
+   make_security
+   run_zsh 'vault <<< "s3cret-value
+MY_TOKEN"
+vault rm MY_TOKEN'
+   [ "$status" -eq 0 ]
+   ! grep -q '^export MY_TOKEN=' "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh"
+}
+
+@test "the plugin sources the manifest at startup" {
+   make_security
+   mkdir -p "$BATS_TEST_TMPDIR/config/kitto-zsh"
+   echo 'export MY_TOKEN="$(vault MY_TOKEN)"' > "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh"
+   run_zsh 'print -r -- "boot:$MY_TOKEN"'
+   [ "$status" -eq 0 ]
+   [[ "$output" == *"boot:s3cret-value"* ]]
+}
+
+@test "a manifest is harmless when vault is skipped" {
+   make_security
+   mkdir -p "$BATS_TEST_TMPDIR/config/kitto-zsh"
+   echo 'export MY_TOKEN="$(vault MY_TOKEN)"' > "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh"
+   run zsh -f -c "
+      PATH=\"$STUB_DIR:/usr/bin:/bin\"
+      export XDG_CONFIG_HOME=\"$BATS_TEST_TMPDIR/config\"
+      KITTO_ZSH_SKIP=(vault)
+      source \"$PLUGIN\"
+      print -r -- \"boot:\$MY_TOKEN\"
+   "
+   [ "$status" -eq 0 ]
+   [[ "$output" == *"boot:"* ]]
+   [[ "$output" != *"command not found"* ]]
 }
 
 @test "vault rejects an empty secret" {

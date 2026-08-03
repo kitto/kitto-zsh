@@ -20,3 +20,8 @@ for _kitto_zsh_fn in "${0:A:h}"/functions/*(N.:t); do
    autoload -Uz "$_kitto_zsh_fn"
 done
 unset _kitto_zsh_fn
+
+# vault-managed exports (the file holds names only — values come from the keychain)
+if (( $+functions[vault] )) && [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/kitto-zsh/vault.zsh" ]]; then
+   source "${XDG_CONFIG_HOME:-$HOME/.config}/kitto-zsh/vault.zsh"
+fi

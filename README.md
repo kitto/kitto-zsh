@@ -18,7 +18,7 @@ Everything autoloads, so the cost to your shell startup is a single `fpath` appe
 | `certify` | Mint trusted local https certs with [mkcert](https://github.com/FiloSottile/mkcert), installing mkcert + nss via brew if needed. Prompts for a domain (default `localhost`), or pass domains directly: `certify example.com`. |
 | `mdn <feature>` | Baseline status + MDN docs for a web feature, via [web-features-cli](https://www.npmjs.com/package/web-features-cli). |
 | `git-prune` | Delete local branches whose upstream is gone. |
-| `vault` | Keep api keys and tokens in the macOS keychain instead of your dotfiles. `vault` prompts for the secret (input hidden) and a name, then hands you a copiable `$(vault NAME)`. `vault NAME` copies the value to the clipboard at a terminal and emits it raw inside command substitution; `vault list` and `vault rm NAME` manage them. The secret never appears in argv, shell history, or on screen. |
+| `vault` | Keep api keys and tokens in the macOS keychain instead of your dotfiles. `vault` prompts for the secret (input hidden) and a name, then exports it automatically — live in the current shell and every new one, so `process.env.NAME` just works. Use `vault -n` to store without exporting, `vault export NAME` to export later, `vault NAME` to grab a value (clipboard at a terminal, raw inside `$(…)`), and `vault list` / `vault rm NAME` to manage. Secrets never appear in argv, shell history, on screen, or in any file — the auto-export manifest holds names only. |
 
 ## Install
 

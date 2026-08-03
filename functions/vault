@@ -20,9 +20,12 @@ case "$1" in
       read -r "name?Call it (e.g. GITHUB_TOKEN): "
       [[ -n "$name" ]] || { echo "kitto-zsh: a name is required" >&2; return 1 }
 
-      # secret + confirmation go in via stdin, so it never touches argv or history
-      printf '%s\n%s\n' "$secret" "$secret" |
-         security add-generic-password -U -a "$account" -s "$name" -w 2>/dev/null || {
+      # the secret rides inside a command on security's stdin — never argv or
+      # history, and batch mode (-i) stops security grabbing the tty to prompt
+      local esc="${secret//\\/\\\\}" nesc="${name//\\/\\\\}"
+      esc="${esc//\"/\\\"}" nesc="${nesc//\"/\\\"}"
+      printf 'add-generic-password -U -a "%s" -s "%s" -w "%s"\n' "$account" "$nesc" "$esc" |
+         security -i >/dev/null 2>&1 || {
             echo "kitto-zsh: keychain write failed" >&2
             return 1
          }

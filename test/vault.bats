@@ -1,30 +1,31 @@
 load helper
 
-# security stub: logs argv, captures stdin, serves canned finds
+# security stub: logs argv, captures -i batch commands from stdin, serves canned finds
 make_security() {
    make_stub security '
-cat > "'"$STUB_DIR"'/security.stdin"
 case "$1" in
+   -i) cat > "'"$STUB_DIR"'/security.stdin" ;;
    find-generic-password) printf "s3cret-value" ;;
    dump-keychain) cat "'"$STUB_DIR"'/dump.txt" 2>/dev/null ;;
 esac'
 }
 
-@test "vault stores via stdin — secret never in argv" {
+@test "vault stores via security -i batch stdin — secret never in argv" {
    make_security
    run_zsh 'vault <<< "s3cret-value
 MY_TOKEN"'
    [ "$status" -eq 0 ]
-   assert_logged "security add-generic-password -U -a kitto-vault -s MY_TOKEN -w"
+   assert_logged "security -i"
    refute_logged "s3cret-value"
-   grep -q "s3cret-value" "$STUB_DIR/security.stdin"
+   grep -qxF 'add-generic-password -U -a "kitto-vault" -s "MY_TOKEN" -w "s3cret-value"' "$STUB_DIR/security.stdin"
 }
 
-@test "vault confirms the secret twice on stdin for security's retype prompt" {
+@test "vault escapes quotes and backslashes for the batch command" {
    make_security
-   run_zsh 'vault <<< "s3cret-value
+   run_zsh 'vault -n <<< "pa\"ss\\word
 MY_TOKEN"'
-   [ "$(grep -c "s3cret-value" "$STUB_DIR/security.stdin")" -eq 2 ]
+   [ "$status" -eq 0 ]
+   grep -qxF 'add-generic-password -U -a "kitto-vault" -s "MY_TOKEN" -w "pa\"ss\\word"' "$STUB_DIR/security.stdin"
 }
 
 @test "vault add auto-exports: manifest line, no secret in it, live in current shell" {
@@ -63,7 +64,7 @@ MY_TOKEN"'
 my token"'
    [ "$status" -eq 0 ]
    [[ "$output" == *"isn't a valid env var name"* ]]
-   assert_logged "security add-generic-password -U -a kitto-vault -s my token -w"
+   grep -qxF 'add-generic-password -U -a "kitto-vault" -s "my token" -w "s3cret-value"' "$STUB_DIR/security.stdin"
    [ ! -f "$BATS_TEST_TMPDIR/config/kitto-zsh/vault.zsh" ]
 }
 

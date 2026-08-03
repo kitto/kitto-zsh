@@ -1,15 +1,5 @@
 load helper
 
-# security stub: logs argv, captures -i batch commands from stdin, serves canned finds
-make_security() {
-   make_stub security '
-case "$1" in
-   -i) cat > "'"$STUB_DIR"'/security.stdin" ;;
-   find-generic-password) printf "s3cret-value" ;;
-   dump-keychain) cat "'"$STUB_DIR"'/dump.txt" 2>/dev/null ;;
-esac'
-}
-
 @test "vault stores via security -i batch stdin — secret never in argv" {
    make_security
    run_zsh 'vault <<< "s3cret-value

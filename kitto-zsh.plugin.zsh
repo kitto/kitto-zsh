@@ -16,6 +16,8 @@ typeset -ga KITTO_ZSH_SKIP
 fpath=("${0:A:h}/functions" "${0:A:h}/completions" $fpath)
 
 for _kitto_zsh_fn in "${0:A:h}"/functions/*(N.:t); do
+   # drop any already-loaded copy so re-sourcing (reload) picks up new versions
+   (( $+functions[$_kitto_zsh_fn] )) && unfunction "$_kitto_zsh_fn"
    (( ${KITTO_ZSH_SKIP[(Ie)$_kitto_zsh_fn]} )) && continue
    autoload -Uz "$_kitto_zsh_fn"
 done

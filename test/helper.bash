@@ -29,6 +29,16 @@ run_zsh() {
    "
 }
 
+# security stub: logs argv, captures -i batch commands from stdin, serves canned finds
+make_security() {
+   make_stub security '
+case "$1" in
+   -i) cat > "'"$STUB_DIR"'/security.stdin" ;;
+   find-generic-password) printf "s3cret-value" ;;
+   dump-keychain) cat "'"$STUB_DIR"'/dump.txt" 2>/dev/null ;;
+esac'
+}
+
 assert_logged() {
    grep -qF "$1" "$KITTO_TEST_LOG" || {
       echo "expected log to contain: $1"

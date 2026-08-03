@@ -36,6 +36,20 @@ load helper
    [[ "$output" != *"bun: function"* ]]
 }
 
+@test "re-sourcing the plugin replaces stale loaded functions" {
+   make_security
+   run zsh -f -c "
+      PATH=\"$STUB_DIR:/usr/bin:/bin\"
+      export XDG_CONFIG_HOME=\"$BATS_TEST_TMPDIR/config\"
+      vault() { echo OLD-IMPLEMENTATION }
+      source \"$PLUGIN\"
+      vault MY_TOKEN
+   "
+   [ "$status" -eq 0 ]
+   [[ "$output" == "s3cret-value" ]]
+   [[ "$output" != *"OLD-IMPLEMENTATION"* ]]
+}
+
 @test "bun is shadowed when it exists" {
    make_stub bun
    run_zsh 'whence -w bun'

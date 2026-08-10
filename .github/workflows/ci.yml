@@ -15,7 +15,7 @@ jobs:
       - name: Syntax check
         run: |
           zsh -n kitto-zsh.plugin.zsh
-          for f in functions/* completions/*; do zsh -n "$f"; done
+          for f in functions/* completions/* bin/*; do zsh -n "$f"; done
 
       - name: Install bats
         run: brew install bats-core

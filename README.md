@@ -25,10 +25,10 @@ Everything autoloads, so the cost to your shell startup is a single `fpath` appe
 ### Homebrew
 
 ```zsh
-brew install mattpilott/tap/kitto-zsh
+brew install mattpilott/tap/kitto-zsh && kitto-zsh init
 ```
 
-Then add to `~/.zshrc`:
+`kitto-zsh init` wires the plugin into your `~/.zshrc` (idempotent — safe to re-run). Prefer doing it yourself? Add:
 
 ```zsh
 source $(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh

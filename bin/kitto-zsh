@@ -1,0 +1,21 @@
+#!/bin/zsh
+# kitto-zsh — plugin setup helper
+
+emulate -L zsh
+
+rc="${ZDOTDIR:-$HOME}/.zshrc"
+
+case "$1" in
+   init)
+      if grep -qF "kitto-zsh.plugin.zsh" "$rc" 2>/dev/null; then
+         echo "kitto-zsh is already wired into $rc"
+         exit 0
+      fi
+      printf '\n# kitto-zsh — https://github.com/mattpilott/kitto-zsh\nsource "$(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh"\n' >> "$rc"
+      echo "added kitto-zsh to $rc — open a new shell (or source it) to start using it"
+      ;;
+   *)
+      echo "usage: kitto-zsh init   # add the plugin to ~/.zshrc"
+      exit 1
+      ;;
+esac

@@ -1,5 +1,5 @@
 # kitto-zsh — a backpack of zsh helpers for Mac JS development
-# https://github.com/mattpilott/kitto-zsh
+# https://github.com/kitto/kitto-zsh
 
 # Standard zero-handling so ${0} is this file's path under any plugin manager
 0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"

@@ -39,7 +39,7 @@ fi'
    mkdir -p "$BATS_TEST_TMPDIR/proj"
    run_zsh "cd \"$BATS_TEST_TMPDIR/proj\" && starter-kit </dev/null"
    [ "$status" -eq 0 ]
-   assert_logged "bunx degit https://github.com/mattpilott/starter-kit ."
+   assert_logged "bunx degit https://github.com/kitto/starter-kit ."
    assert_logged "mkcert -install"
    assert_logged "mkcert localhost"
    assert_logged "bun update -i --latest"
@@ -51,7 +51,7 @@ fi'
    make_stub mkcert
    run_zsh 'starter-kit </dev/null'
    [ "$status" -eq 0 ]
-   assert_logged "pnpm dlx degit https://github.com/mattpilott/starter-kit ."
+   assert_logged "pnpm dlx degit https://github.com/kitto/starter-kit ."
    assert_logged "mkcert localhost"
    refute_logged "bun update"
    [[ "$output" == *"skipped bun up"* ]]
@@ -63,7 +63,7 @@ fi'
    make_stub mkcert
    run_zsh 'starter-kit </dev/null'
    [ "$status" -eq 0 ]
-   assert_logged "npx --yes degit https://github.com/mattpilott/starter-kit ."
+   assert_logged "npx --yes degit https://github.com/kitto/starter-kit ."
 }
 
 @test "starter-kit fails clearly with no runner at all" {

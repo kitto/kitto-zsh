@@ -1,6 +1,6 @@
 # kitto-zsh
 
-A backpack of zsh helpers for Mac JS development. Companion to [kitto](https://github.com/mattpilott/kitto).
+A backpack of zsh helpers for Mac JS development. Companion to [kitto](https://github.com/kitto/kitto).
 
 Everything autoloads, so the cost to your shell startup is a single `fpath` append.
 
@@ -14,7 +14,7 @@ Everything autoloads, so the cost to your shell startup is a single `fpath` appe
 | `bun up` | Interactive `bun update -i --latest`, then wipes `node_modules` + `bun.lock`, reinstalls fresh and starts `bun dev`. |
 | `kit i` | Scaffold a SvelteKit project in the current directory (`bunx sv create .`). |
 | `kit up` | Update `@sveltejs/kit` and `@sveltejs/adapter-auto`. |
-| `starter-kit` | Degit [mattpilott/starter-kit](https://github.com/mattpilott/starter-kit) into the current directory (via bun, pnpm or npm — whichever you have), mint https certs with `certify`, then `bun up`. |
+| `starter-kit` | Degit [kitto/starter-kit](https://github.com/kitto/starter-kit) into the current directory (via bun, pnpm or npm — whichever you have), mint https certs with `certify`, then `bun up`. |
 | `certify` | Mint trusted local https certs with [mkcert](https://github.com/FiloSottile/mkcert), installing mkcert + nss via brew if needed. Prompts for a domain (default `localhost`), or pass domains directly: `certify example.com`. |
 | `mdn <feature>` | Baseline status + MDN docs for a web feature, via [web-features-cli](https://www.npmjs.com/package/web-features-cli). |
 | `git-prune` | Delete local branches whose upstream is gone. |
@@ -25,7 +25,7 @@ Everything autoloads, so the cost to your shell startup is a single `fpath` appe
 ### Homebrew
 
 ```zsh
-brew install mattpilott/tap/kitto-zsh && kitto-zsh init
+brew install kitto/tap/kitto-zsh && kitto-zsh init
 ```
 
 `kitto-zsh init` wires the plugin into your `~/.zshrc` (idempotent — safe to re-run). Prefer doing it yourself? Add:
@@ -37,13 +37,13 @@ source $(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh
 ### antidote / zinit / sheldon
 
 ```zsh
-antidote bundle mattpilott/kitto-zsh
+antidote bundle kitto/kitto-zsh
 ```
 
 ### oh-my-zsh
 
 ```zsh
-git clone https://github.com/mattpilott/kitto-zsh $ZSH_CUSTOM/plugins/kitto-zsh
+git clone https://github.com/kitto/kitto-zsh $ZSH_CUSTOM/plugins/kitto-zsh
 ```
 
 ```zsh
@@ -53,7 +53,7 @@ plugins=(git brew npm kitto-zsh)
 ### No manager
 
 ```zsh
-git clone https://github.com/mattpilott/kitto-zsh ~/.kitto-zsh
+git clone https://github.com/kitto/kitto-zsh ~/.kitto-zsh
 ```
 
 ```zsh

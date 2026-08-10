@@ -11,7 +11,7 @@ case "$1" in
          echo "kitto-zsh is already wired into $rc"
          exit 0
       fi
-      printf '\n# kitto-zsh — https://github.com/mattpilott/kitto-zsh\nsource "$(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh"\n' >> "$rc"
+      printf '\n# kitto-zsh — https://github.com/kitto/kitto-zsh\nsource "$(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh"\n' >> "$rc"
       echo "added kitto-zsh to $rc — open a new shell (or source it) to start using it"
       ;;
    *)

@@ -1,4 +1,4 @@
-# starter-kit — degit mattpilott/starter-kit here, mint certs, update deps and run
+# starter-kit — degit kitto/starter-kit here, mint certs, update deps and run
 emulate -L zsh
 
 # degit just needs a runner — bun, pnpm or npm all work
@@ -14,7 +14,7 @@ else
    return 127
 fi
 
-$runner degit https://github.com/mattpilott/starter-kit . || return
+$runner degit https://github.com/kitto/starter-kit . || return
 
 (( $+functions[certify] )) && certify
 

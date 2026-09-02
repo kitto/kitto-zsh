@@ -8,7 +8,7 @@ case $service in
    kit)
       subs=(
          'i:scaffold a SvelteKit project here (bunx sv create .)'
-         'up:update @sveltejs/kit and adapter-auto'
+         'up:update @sveltejs/kit and the project adapter'
       )
       (( CURRENT == 2 )) && _describe -t subcommands 'kit subcommand' subs
       ;;
@@ -25,10 +25,15 @@ case $service in
       local -a names
       names=(${(f)"$(vault list 2>/dev/null)"})
       if (( CURRENT == 2 )); then
-         subs=('list:show stored secret names' 'rm:delete a stored secret')
+         subs=(
+            'list:show stored secret names'
+            'rm:delete a stored secret'
+            'export:auto-export an already-stored secret'
+            '-n:store a secret without exporting it'
+         )
          _describe -t subcommands 'vault subcommand' subs
          (( $#names )) && _describe -t secrets 'stored secret' names
-      elif (( CURRENT == 3 )) && [[ $words[2] == rm ]]; then
+      elif (( CURRENT == 3 )) && [[ $words[2] == (rm|export) ]]; then
          _describe -t secrets 'stored secret' names
       fi
       ;;

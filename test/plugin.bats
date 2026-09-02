@@ -56,3 +56,24 @@ load helper
    [ "$status" -eq 0 ]
    [[ "$output" == *"bun: function"* ]]
 }
+
+@test "KITTO_ZSH_SKIP leaves a user's own function of that name intact" {
+   run zsh -f -c "
+      PATH=\"$STUB_DIR:/usr/bin:/bin\"
+      upgrade() { echo MY-OWN-UPGRADE }
+      KITTO_ZSH_SKIP=(upgrade)
+      source \"$PLUGIN\"
+      upgrade
+   "
+   [ "$status" -eq 0 ]
+   [[ "$output" == *"MY-OWN-UPGRADE"* ]]
+}
+
+@test "re-sourcing the plugin doesn't duplicate fpath entries" {
+   run zsh -f -c "
+      PATH=\"$STUB_DIR:/usr/bin:/bin\"
+      source \"$PLUGIN\"; source \"$PLUGIN\"
+      print -l \$fpath | grep -c kitto-zsh
+   "
+   [ "$output" -eq 2 ]
+}

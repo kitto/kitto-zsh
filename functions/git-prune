@@ -6,5 +6,10 @@ if ! (( $+commands[git] )); then
    return 127
 fi
 
+# worktreepath is set for the current branch and anything checked out in a
+# worktree — git refuses to delete those, so only two-field lines qualify.
+# -D because squash-merged branches never look merged to git, yet a gone
+# upstream is exactly that case.
 git fetch --prune &&
-git branch -vv | awk '$1 != "*" && /: gone]/ {print $1}' | xargs -r git branch -d
+git for-each-ref --format='%(refname:short) %(upstream:track) %(worktreepath)' refs/heads |
+   awk '$2 == "[gone]" && NF == 2 {print $1}' | xargs -r git branch -D

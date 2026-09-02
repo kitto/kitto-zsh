@@ -1,20 +1,22 @@
 load helper
 
-@test "git-prune deletes only branches whose upstream is gone" {
+@test "git-prune force-deletes gone branches, never the current or worktree ones" {
    make_stub git '
-if [ "$1" = "branch" ] && [ "$2" = "-vv" ]; then
+if [ "$1" = "for-each-ref" ]; then
 cat <<OUT
-* main       1234567 [origin/main] latest
-  feature-a  2345678 [origin/feature-a: gone] old work
-  feature-b  3456789 [origin/feature-b] active
+main [ahead 1] /Users/x/proj
+feature-a [gone] 
+feature-b  
+in-worktree [gone] /Users/x/proj-wt
 OUT
 fi'
    run_zsh 'git-prune'
    [ "$status" -eq 0 ]
    assert_logged "git fetch --prune"
-   assert_logged "git branch -d feature-a"
-   refute_logged "git branch -d feature-b"
-   refute_logged "git branch -d main"
+   assert_logged "git branch -D feature-a"
+   refute_logged "git branch -D feature-b"
+   refute_logged "git branch -D main"
+   refute_logged "git branch -D in-worktree"
 }
 
 @test "mdn queries web-features-cli with baseline sections" {

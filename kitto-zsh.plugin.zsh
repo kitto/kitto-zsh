@@ -13,12 +13,14 @@ typeset -ga KITTO_ZSH_SKIP
 #  passes everything else through to the real binary)
 (( $+commands[bun] )) || KITTO_ZSH_SKIP+=(bun)
 
-fpath=("${0:A:h}/functions" "${0:A:h}/completions" $fpath)
+# strip our own entries first so re-sourcing (reload) doesn't pile up duplicates
+fpath=("${0:A:h}/functions" "${0:A:h}/completions" ${fpath:#${0:A:h}/*})
 
 for _kitto_zsh_fn in "${0:A:h}"/functions/*(N.:t); do
+   # skip first: a skipped name may be the user's own function, which must survive
+   (( ${KITTO_ZSH_SKIP[(Ie)$_kitto_zsh_fn]} )) && continue
    # drop any already-loaded copy so re-sourcing (reload) picks up new versions
    (( $+functions[$_kitto_zsh_fn] )) && unfunction "$_kitto_zsh_fn"
-   (( ${KITTO_ZSH_SKIP[(Ie)$_kitto_zsh_fn]} )) && continue
    autoload -Uz "$_kitto_zsh_fn"
 done
 unset _kitto_zsh_fn

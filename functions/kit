@@ -8,6 +8,11 @@ fi
 
 case "$1" in
    i)  bunx sv create . ;;
-   up) command bun install -D @sveltejs/kit @sveltejs/adapter-auto ;;
+   up)
+      # keep whichever adapter the project already uses; adapter-auto for a fresh one
+      local adapter
+      adapter="$(grep -oE '"@sveltejs/adapter-[a-z0-9-]+"' package.json 2>/dev/null | head -1 | tr -d '"')"
+      command bun install -D @sveltejs/kit "${adapter:-@sveltejs/adapter-auto}"
+      ;;
    *)  echo "usage: kit i|up" >&2; return 1 ;;
 esac

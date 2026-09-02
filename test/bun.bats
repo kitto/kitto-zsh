@@ -3,7 +3,7 @@ load helper
 @test "bun up updates, reinstalls from scratch and starts dev" {
    make_stub bun
    mkdir -p "$BATS_TEST_TMPDIR/proj/node_modules"
-   touch "$BATS_TEST_TMPDIR/proj/bun.lock"
+   touch "$BATS_TEST_TMPDIR/proj/bun.lock" "$BATS_TEST_TMPDIR/proj/bun.lockb"
    run_zsh "cd \"$BATS_TEST_TMPDIR/proj\" && bun up"
    [ "$status" -eq 0 ]
    assert_logged "bun update -i --latest"
@@ -11,6 +11,20 @@ load helper
    assert_logged "bun dev"
    [ ! -d "$BATS_TEST_TMPDIR/proj/node_modules" ]
    [ ! -f "$BATS_TEST_TMPDIR/proj/bun.lock" ]
+   [ ! -f "$BATS_TEST_TMPDIR/proj/bun.lockb" ]
+}
+
+@test "bun up leaves the install alone when the update fails" {
+   make_stub bun '[ "$1" = update ] && exit 1'
+   mkdir -p "$BATS_TEST_TMPDIR/proj/node_modules"
+   touch "$BATS_TEST_TMPDIR/proj/bun.lock"
+   run_zsh "cd \"$BATS_TEST_TMPDIR/proj\" && bun up"
+   [ "$status" -ne 0 ]
+   assert_logged "bun update -i --latest"
+   refute_logged "bun i"
+   refute_logged "bun dev"
+   [ -d "$BATS_TEST_TMPDIR/proj/node_modules" ]
+   [ -f "$BATS_TEST_TMPDIR/proj/bun.lock" ]
 }
 
 @test "bun passes everything else through" {

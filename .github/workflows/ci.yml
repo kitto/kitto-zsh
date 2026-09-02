@@ -10,7 +10,7 @@ jobs:
     # brew and fnm behaviour are the whole point — Linux would test the wrong thing
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Syntax check
         run: |
@@ -24,4 +24,4 @@ jobs:
         run: bats test
 
       - name: Fresh shell smoke test
-        run: zsh -df -c 'source ./kitto-zsh.plugin.zsh; whence -w upgrade kit starter-kit mdn git-prune'
+        run: zsh -df -c 'source ./kitto-zsh.plugin.zsh; whence -w upgrade node kit starter-kit certify mdn git-prune vault'

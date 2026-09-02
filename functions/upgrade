@@ -1,40 +1,78 @@
-# upgrade — brew → node → npm → bun, skipping anything not installed
+# upgrade — run every step in KITTO_ZSH_UPGRADE (brew node npm bun claude by default)
+#
+# A step resolves to a user function called upgrade-<step> if one exists, else
+# to the built-in of that name. That one rule covers adding a step, reordering,
+# and overriding a built-in:
+#   upgrade-rust() { rustup update }
+#   KITTO_ZSH_UPGRADE=(brew node npm bun claude rust)
+# Passing step names runs just those: upgrade node bun
 emulate -L zsh
 
-local step=$'\n\033[1;36m→ %s\033[0m\n'
+local heading=$'\n\033[1;36m→ %s\033[0m\n'
 
-if (( $+commands[brew] )); then
-   printf "$step" "Homebrew"
-   brew update && brew upgrade
+local -a steps=("$@")
+(( $#steps )) || steps=("${KITTO_ZSH_UPGRADE[@]}")
+(( $#steps )) || steps=(brew node npm bun claude)
 
-   printf "$step" "Homebrew doctor"
-   brew doctor   # warnings are informational, so don't stop the run on them
+local name
+for name in $steps; do
+   if (( $+functions[upgrade-$name] )); then
+      printf "$heading" "$name"
+      upgrade-$name
+      continue
+   fi
 
-   printf "$step" "Homebrew cleanup"
-   brew cleanup
-else
-   printf "$step" "Homebrew (skipped — not installed)"
-fi
+   case "$name" in
+      brew)
+         if (( $+commands[brew] )); then
+            printf "$heading" "Homebrew"
+            brew update && brew upgrade
 
-if (( $+functions[node] )); then
-   printf "$step" "Node"
-   node upgrade   # installs fnm on first run if it's missing
-else
-   printf "$step" "Node (skipped)"
-fi
+            printf "$heading" "Homebrew doctor"
+            brew doctor   # warnings are informational, so don't stop the run on them
 
-if (( $+commands[npm] )); then
-   printf "$step" "npm"
-   npm i npm -g
-else
-   printf "$step" "npm (skipped — not installed)"
-fi
+            printf "$heading" "Homebrew cleanup"
+            brew cleanup
+         else
+            printf "$heading" "Homebrew (skipped — not installed)"
+         fi
+         ;;
+      node)
+         if (( $+functions[node] )); then
+            printf "$heading" "Node"
+            node upgrade   # installs fnm on first run if it's missing
+         else
+            printf "$heading" "Node (skipped)"
+         fi
+         ;;
+      npm)
+         if (( $+commands[npm] )); then
+            printf "$heading" "npm"
+            npm i npm -g
+         else
+            printf "$heading" "npm (skipped — not installed)"
+         fi
+         ;;
+      bun)
+         if (( $+commands[bun] )); then
+            printf "$heading" "Bun"
+            command bun upgrade
+         else
+            printf "$heading" "Bun (skipped — not installed)"
+         fi
+         ;;
+      claude)
+         if (( $+commands[claude] )); then
+            printf "$heading" "Claude Code"
+            claude update
+         else
+            printf "$heading" "Claude Code (skipped — not installed)"
+         fi
+         ;;
+      *)
+         printf "$heading" "$name (skipped — no built-in step or upgrade-$name function)"
+         ;;
+   esac
+done
 
-if (( $+commands[bun] )); then
-   printf "$step" "Bun"
-   command bun upgrade
-else
-   printf "$step" "Bun (skipped — not installed)"
-fi
-
-printf "$step" "All up to date"
+printf "$heading" "All up to date"

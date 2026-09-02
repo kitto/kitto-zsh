@@ -1,10 +1,15 @@
-#compdef kit node vault
+#compdef kit node vault upgrade
 # bun is deliberately not claimed here — bun ships its own rich completion
 # (~/.bun/_bun) and registering it would clobber that.
 
 local -a subs
 
 case $service in
+   upgrade)
+      # built-ins plus any user-defined upgrade-<step> functions
+      local -a steps=(brew node npm bun claude ${${(k)functions[(I)upgrade-*]}#upgrade-})
+      _describe -t steps 'upgrade step' steps
+      ;;
    kit)
       subs=(
          'i:scaffold a SvelteKit project here (bunx sv create .)'

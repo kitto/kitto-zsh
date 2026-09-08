@@ -8,7 +8,7 @@ Everything autoloads, so shell startup costs a single `fpath` append — plus on
 
 | Function | What it does |
 |---|---|
-| `upgrade` | One command to update everything: brew (update, upgrade, doctor, cleanup) → node → npm → bun → Claude Code. Skips anything you don't have installed. Pass step names to run a subset (`upgrade node bun`), or [add your own steps](#customising-upgrade). |
+| `upgrade` | One command to update everything: brew (update, upgrade, doctor, cleanup) → node → npm → bun → Claude Code → Codex. Skips anything you don't have installed. Pass step names to run a subset (`upgrade node bun`), or [add your own steps](#customising-upgrade). |
 | `node upgrade` | Installs the latest LTS and latest node via [fnm](https://github.com/Schniz/fnm), uninstalls every other version, keeps your current default channel. Installs fnm itself (via brew) on first run. |
 | `node lts` / `node latest` | Switch your fnm default channel. Everything else passes through to the real `node`. |
 | `bun up` | Interactive `bun update -i --latest`, then wipes `node_modules` + the lockfile (`bun.lock` or the older `bun.lockb`), reinstalls fresh and starts `bun dev`. Stops early if the update fails or you cancel it. |
@@ -62,14 +62,14 @@ source ~/.kitto-zsh/kitto-zsh.plugin.zsh
 
 ## Customising upgrade
 
-The steps `upgrade` runs, and their order, come from `KITTO_ZSH_UPGRADE` (default `brew node npm bun claude`). A step resolves to a function called `upgrade-<step>` if you have defined one, otherwise to the built-in of that name. That one rule covers adding, reordering and overriding:
+The steps `upgrade` runs, and their order, come from `KITTO_ZSH_UPGRADE` (default `brew node npm bun claude codex`). A step resolves to a function called `upgrade-<step>` if you have defined one, otherwise to the built-in of that name. That one rule covers adding, reordering and overriding:
 
 ```zsh
 # ~/.zshrc
 upgrade-rust() { rustup update }
 upgrade-mac()  { softwareupdate --install --all }
 
-KITTO_ZSH_UPGRADE=(brew node npm bun claude rust mac)
+KITTO_ZSH_UPGRADE=(brew node npm bun claude codex rust mac)
 ```
 
 The array is read when `upgrade` runs, so it can be set before or after the plugin loads, and `KITTO_ZSH_UPGRADE+=(rust)` works too. Defining `upgrade-brew` yourself replaces the built-in Homebrew step (handy if you don't want `brew doctor`). A step name that is neither a built-in nor a defined function is reported and skipped, so a typo never goes unnoticed.

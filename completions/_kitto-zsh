@@ -7,7 +7,7 @@ local -a subs
 case $service in
    upgrade)
       # built-ins plus any user-defined upgrade-<step> functions
-      local -a steps=(brew node npm bun claude ${${(k)functions[(I)upgrade-*]}#upgrade-})
+      local -a steps=(brew node npm bun claude codex ${${(k)functions[(I)upgrade-*]}#upgrade-})
       _describe -t steps 'upgrade step' steps
       ;;
    kit)

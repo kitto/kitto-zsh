@@ -1,10 +1,10 @@
-# upgrade — run every step in KITTO_ZSH_UPGRADE (brew node npm bun claude by default)
+# upgrade — run every step in KITTO_ZSH_UPGRADE (brew node npm bun claude codex by default)
 #
 # A step resolves to a user function called upgrade-<step> if one exists, else
 # to the built-in of that name. That one rule covers adding a step, reordering,
 # and overriding a built-in:
 #   upgrade-rust() { rustup update }
-#   KITTO_ZSH_UPGRADE=(brew node npm bun claude rust)
+#   KITTO_ZSH_UPGRADE=(brew node npm bun claude codex rust)
 # Passing step names runs just those: upgrade node bun
 emulate -L zsh
 
@@ -12,7 +12,7 @@ local heading=$'\n\033[1;36m→ %s\033[0m\n'
 
 local -a steps=("$@")
 (( $#steps )) || steps=("${KITTO_ZSH_UPGRADE[@]}")
-(( $#steps )) || steps=(brew node npm bun claude)
+(( $#steps )) || steps=(brew node npm bun claude codex)
 
 local name
 for name in $steps; do
@@ -67,6 +67,14 @@ for name in $steps; do
             claude update
          else
             printf "$heading" "Claude Code (skipped — not installed)"
+         fi
+         ;;
+      codex)
+         if (( $+commands[codex] )); then
+            printf "$heading" "Codex"
+            codex update
+         else
+            printf "$heading" "Codex (skipped — not installed)"
          fi
          ;;
       *)

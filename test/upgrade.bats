@@ -5,6 +5,7 @@ load helper
    make_stub npm
    make_stub bun
    make_stub claude
+   make_stub codex
    make_stub fnm '
 case "$1" in
    list) printf "* v22.12.0 default, lts-latest\n" ;;
@@ -20,6 +21,7 @@ esac'
    assert_logged "npm i npm -g"
    assert_logged "bun upgrade"
    assert_logged "claude update"
+   assert_logged "codex update"
    [[ "$output" == *"All up to date"* ]]
 }
 
@@ -31,12 +33,13 @@ esac'
    [[ "$output" == *"npm (skipped"* ]]
    [[ "$output" == *"Bun (skipped"* ]]
    [[ "$output" == *"Claude Code (skipped"* ]]
+   [[ "$output" == *"Codex (skipped"* ]]
    [[ "$output" == *"All up to date"* ]]
 }
 
 @test "the plugin gives KITTO_ZSH_UPGRADE the default step list, but keeps a preset one" {
    run_zsh 'print -r -- "$KITTO_ZSH_UPGRADE"'
-   [ "$output" = "brew node npm bun claude" ]
+   [ "$output" = "brew node npm bun claude codex" ]
    run zsh -f -c "
       PATH=\"$STUB_DIR:/usr/bin:/bin\"
       KITTO_ZSH_UPGRADE=(bun)

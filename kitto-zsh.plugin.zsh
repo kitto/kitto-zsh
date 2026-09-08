@@ -11,7 +11,7 @@ typeset -ga KITTO_ZSH_SKIP
 # Steps `upgrade` runs, in order — read when it runs, so edit or append any time
 # (a user upgrade-<step> function adds a step or overrides a built-in)
 typeset -ga KITTO_ZSH_UPGRADE
-(( $#KITTO_ZSH_UPGRADE )) || KITTO_ZSH_UPGRADE=(brew node npm bun claude)
+(( $#KITTO_ZSH_UPGRADE )) || KITTO_ZSH_UPGRADE=(brew node npm bun claude codex)
 
 # bun shadows the real binary — only take over when bun itself exists
 # (node is always defined: it installs fnm on first subcommand use and

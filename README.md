@@ -34,6 +34,8 @@ brew install kitto/tap/kitto-zsh && kitto-zsh init
 source $(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh
 ```
 
+`kitto-zsh -v` (or `--version`) prints the installed version.
+
 ### antidote / zinit / sheldon
 
 ```zsh

@@ -21,3 +21,31 @@ BIN="$BATS_TEST_DIRNAME/../bin/kitto-zsh"
    [ "$status" -eq 1 ]
    [[ "$output" == *"usage: kitto-zsh init"* ]]
 }
+
+@test "kitto-zsh -v and --version print the version" {
+   run zsh "$BIN" -v
+   [ "$status" -eq 0 ]
+   [[ "$output" == "kitto-zsh "[0-9]*.[0-9]*.[0-9]* ]]
+   local short="$output"
+   run zsh "$BIN" --version
+   [ "$status" -eq 0 ]
+   [ "$output" = "$short" ]
+}
+
+@test "a tagged commit's version matches its tag" {
+   command -v git >/dev/null || skip "git not available"
+   cd "$BATS_TEST_DIRNAME/.." || return 1
+   local tag
+   # only meaningful on a release commit — the bump lands before the tag does,
+   # so an untagged HEAD has nothing to compare against
+   tag="$(git describe --exact-match --tags HEAD 2>/dev/null)" || skip "HEAD is not tagged"
+   run zsh "$BIN" -v
+   [ "$output" = "kitto-zsh ${tag#v}" ]
+}
+
+@test "usage mentions both subcommands" {
+   run zsh "$BIN" nonsense
+   [ "$status" -eq 1 ]
+   [[ "$output" == *"kitto-zsh init"* ]]
+   [[ "$output" == *"--version"* ]]
+}

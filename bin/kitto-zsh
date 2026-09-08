@@ -3,6 +3,9 @@
 
 emulate -L zsh
 
+# bumped at release time, alongside the git tag and the tap formula
+version=0.9.1
+
 rc="${ZDOTDIR:-$HOME}/.zshrc"
 
 case "$1" in
@@ -14,8 +17,12 @@ case "$1" in
       printf '\n# kitto-zsh — https://github.com/kitto/kitto-zsh\nsource "$(brew --prefix)/opt/kitto-zsh/kitto-zsh.plugin.zsh"\n' >> "$rc"
       echo "added kitto-zsh to $rc — open a new shell (or source it) to start using it"
       ;;
+   -v|--version)
+      echo "kitto-zsh $version"
+      ;;
    *)
-      echo "usage: kitto-zsh init   # add the plugin to ~/.zshrc"
+      echo "usage: kitto-zsh init          # add the plugin to ~/.zshrc"
+      echo "       kitto-zsh -v|--version  # print the installed version"
       exit 1
       ;;
 esac

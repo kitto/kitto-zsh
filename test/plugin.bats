@@ -77,3 +77,10 @@ load helper
    "
    [ "$output" -eq 2 ]
 }
+
+@test "functions still load once our fpath entries are gone" {
+   make_stub node
+   run_zsh 'fpath=(${fpath:#*kitto-zsh*}); node --version'
+   [ "$status" -eq 0 ]
+   assert_logged "node --version"
+}

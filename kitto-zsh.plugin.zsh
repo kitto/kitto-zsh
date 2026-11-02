@@ -26,7 +26,9 @@ for _kitto_zsh_fn in "${0:A:h}"/functions/*(N.:t); do
    (( ${KITTO_ZSH_SKIP[(Ie)$_kitto_zsh_fn]} )) && continue
    # drop any already-loaded copy so re-sourcing (reload) picks up new versions
    (( $+functions[$_kitto_zsh_fn] )) && unfunction "$_kitto_zsh_fn"
-   autoload -Uz "$_kitto_zsh_fn"
+   # absolute path so the stub records its directory and still loads without our
+   # fpath entry, e.g. when a tool replays a snapshot of functions (Claude Code)
+   autoload -Uz "${0:A:h}/functions/$_kitto_zsh_fn"
 done
 unset _kitto_zsh_fn
 
